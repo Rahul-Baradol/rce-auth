@@ -1,6 +1,8 @@
 import express, { Request, Response } from "express";
 import bodyParser from "body-parser";
-import crypto from 'crypto'
+import bcrypt from 'bcryptjs';
+
+require('dotenv').config({ path: '.env.local' });
 
 const jsonwebtoken = require('jsonwebtoken');
 
@@ -22,14 +24,11 @@ router.post('/', jsonParser, async (req: Request, res: Response) => {
          status: "invalid"
       })
    }
+   
+   const permit = bcrypt.compareSync(pass, dbProfiles.pass);
 
-   let cipher = crypto.createCipheriv('aes-256-cbc', Buffer.alloc(32, 0), Buffer.alloc(16, 0));
-
-   let encrypted = cipher.update(pass);
-   encrypted = Buffer.concat([encrypted, cipher.final()]);
-
-   if (encrypted.toString('hex') === dbProfiles.pass) {
-      let token = jsonwebtoken.sign({ email: email, name: dbProfiles.name }, 'secret', { expiresIn: '1h' });
+   if (permit) {
+      let token = jsonwebtoken.sign({ email: email, name: dbProfiles.name }, process.env.JWT_KEY);
       return res.status(200).json({ token: token })
    }
    
@@ -38,4 +37,4 @@ router.post('/', jsonParser, async (req: Request, res: Response) => {
    })
 })
 
-export default router
+export default router;

@@ -19,5 +19,5 @@ app.get('/', (req: Request, res: Response) => {
 })
 
 app.listen(process.env.PORT, () => {
-   console.log(`rec-auth service running on port ${process.env.PORT}`);
+   console.log(`rce-auth service running on port ${process.env.PORT}`);
 })

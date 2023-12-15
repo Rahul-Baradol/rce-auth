@@ -1,7 +1,9 @@
 import express, { Request, Response } from "express";
 import bodyParser from "body-parser";
-import crypto from 'crypto'
+import bcrypt from 'bcryptjs'
 import profile from "../models/profile";
+
+require('dotenv').config({ path: '.env.local' });
 
 const router = express.Router();
 const jsonParser = bodyParser.json();
@@ -21,17 +23,14 @@ router.post('/', jsonParser, async (req: Request, res: Response) => {
       })
    }
 
-   let cipher = crypto.createCipheriv(
-      'aes-256-cbc', Buffer.alloc(32, 0), Buffer.alloc(16, 0));
-
-   let encrypted = cipher.update(pass);
-   encrypted = Buffer.concat([encrypted, cipher.final()]);
+   const hash = bcrypt.hashSync(pass, Number(process.env.ENCRYPTION_SALT));
 
    let newProfile = new profile({
       name: name,
       email: email,
-      pass: encrypted.toString('hex')
+      pass: hash
    })
+
    newProfile.save();
 
    return res.json({
@@ -39,4 +38,4 @@ router.post('/', jsonParser, async (req: Request, res: Response) => {
    })
 })
 
-export default router
+export default router;
