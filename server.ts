@@ -9,15 +9,17 @@ import connectDB from "./middleware/connectdb";
 const cors = require('cors');
 const app = express();
 
+const PORT = process.env.PORT || 3001
+
 app.use(cors());
 
 app.use('/signup', connectDB, signupRouter);
 app.use('/login', connectDB, loginRouter);
 
-app.get('/', (req: Request, res: Response) => {
+app.get('/status', (req: Request, res: Response) => {
    res.send("auth service running");
 })
 
-app.listen(process.env.PORT, () => {
-   console.log(`rce-auth service running on port ${process.env.PORT}`);
+app.listen(PORT, () => {
+   console.log(`rce-auth service running on port ${PORT}`);
 })
