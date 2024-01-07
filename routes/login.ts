@@ -11,18 +11,6 @@ import profile from "../models/profile";
 const router = express.Router();
 const jsonParser = bodyParser.json();
 
-function generateRandomString(length: number) {
-   const characters = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
-   let result = '';
-
-   for (let i = 0; i < length; i++) {
-      const randomIndex = Math.floor(Math.random() * characters.length);
-      result += characters.charAt(randomIndex);
-   }
-
-   return result;
-}
-
 router.post('/', jsonParser, async (req: Request, res: Response) => {
    try {
       const email = req.body.email;
@@ -41,19 +29,24 @@ router.post('/', jsonParser, async (req: Request, res: Response) => {
       const permit = bcrypt.compareSync(pass, dbProfiles.pass);
 
       if (permit) {
-         const sessionKey = generateRandomString(15);
-
+         let date = new Date();
+         let utcTime = date.toISOString();
+         
          await profile.findByIdAndUpdate(dbProfiles._id, {
-            sessionKey: sessionKey
+            loginTime: utcTime
          })
 
          let token = jsonwebtoken.sign({ 
             email: email, 
             name: dbProfiles.name,
-            sessionKey: sessionKey
+            loginTime: utcTime
          }, process.env.JWT_KEY);
 
-         return res.status(200).json({ token: token })
+         return res.status(200).json({ 
+            token: token,
+            email: email,
+            user: dbProfiles.name
+         })
       }
 
       return res.status(403).json({
